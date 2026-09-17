@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: reservation-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/reservations}
+    username: ${DB_USER:reservations}
+    password: ${DB_PASSWORD:reservations}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 3000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # Flyway owns the schema; Hibernate only checks it
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 500ms
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 16
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      acks: all                 # do not acknowledge until replicas have the record
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 30000
+
+reservation:
+  hold-ttl: 15m                 # how long inventory stays held without confirmation
+  topic: reservation-events
+  outbox:
+    batch-size: 100
+    max-attempts: 10
+    poll-interval-ms: 1000
+  expiry:
+    batch-size: 200
+    poll-interval-ms: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    com.abhishekrana.reservation: INFO
