@@ -1,0 +1,15 @@
+reservation:
+  hold-ttl: 15m                 # how long inventory stays held without confirmation
+  topic: reservation-events
+  outbox:
+    batch-size: 100
+    max-attempts: 10
+    poll-interval-ms: 1000
+  expiry:
+    batch-size: 200
+    poll-interval-ms: 5000
+  reconcile:
+    enabled: true               # set false to disable the drift check entirely
+    repair: false               # DETECT-only by default; see InventoryReconciliationJob
+    poll-interval-ms: 60000     # how often to compare Redis against the table
+    initial-delay-ms: 30000     # let the app settle before the first pass
